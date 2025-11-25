@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Supabase Connection</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+    .success { background: #22c55e; }
+    .error { background: #ef4444; }
+    .warning { background: #f59e0b; }
+    pre {
+      background: #2a2a2a;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Supabase Connection Test</h1>
+  <div id="results"></div>
+
+  <script type="module">
+    const results = document.getElementById('results');
+
+    function log(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `status ${type}`;
+      div.textContent = message;
+      results.appendChild(div);
+    }
+
+    function logPre(title, data) {
+      const h3 = document.createElement('h3');
+      h3.textContent = title;
+      results.appendChild(h3);
+
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify(data, null, 2);
+      results.appendChild(pre);
+    }
+
+    async function testSupabase() {
+      try {
+        // Check env variables
+        const url = import.meta.env.VITE_SUPABASE_URL;
+        const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+        log('Step 1: Checking Environment Variables', 'info');
+
+        if (!url) {
+          log('❌ VITE_SUPABASE_URL is missing!', 'error');
+          return;
+        } else {
+          log(`✅ VITE_SUPABASE_URL: ${url}`, 'success');
+        }
+
+        if (!key) {
+          log('❌ VITE_SUPABASE_ANON_KEY is missing!', 'error');
+          return;
+        } else {
+          log(`✅ VITE_SUPABASE_ANON_KEY: ${key.substring(0, 20)}...`, 'success');
+        }
+
+        // Import Supabase
+        log('Step 2: Importing Supabase Client', 'info');
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+        const supabase = createClient(url, key);
+        log('✅ Supabase client created', 'success');
+
+        // Test connection
+        log('Step 3: Testing Connection', 'info');
+        const { data, error } = await supabase.from('watch_history').select('count');
+
+        if (error) {
+          log(`⚠️ Database query error: ${error.message}`, 'warning');
+          logPre('Error Details:', error);
+        } else {
+          log('✅ Database connection successful!', 'success');
+          logPre('Query Result:', data);
+        }
+
+        // Test auth
+        log('Step 4: Testing Auth', 'info');
+        const { data: userData, error: authError } = await supabase.auth.getUser();
+
+        if (authError) {
+          log(`⚠️ Auth check: ${authError.message}`, 'warning');
+          log('This is normal if not logged in', 'info');
+        } else if (userData.user) {
+          log(`✅ Logged in as: ${userData.user.email}`, 'success');
+          logPre('User Data:', userData.user);
+        } else {
+          log('ℹ️ Not logged in (this is normal)', 'info');
+        }
+
+      } catch (err) {
+        log(`❌ Fatal error: ${err.message}`, 'error');
+        logPre('Error Stack:', err);
+      }
+    }
+
+    testSupabase();
+  </script>
+</body>
+</html>
