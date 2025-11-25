@@ -33,7 +33,23 @@ const { navLinks } = Astro.props;
         {siteName}
       </h1>
     </a>
-    <div class="flex md:order-2 space-x-2 md:space-x-2 rtl:space-x-reverse">
+    <div class="flex md:order-2 space-x-2 md:space-x-2 rtl:space-x-reverse items-center">
+      <button
+        id="signInBtn"
+        type="button"
+        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+      >
+        Sign In
+      </button>
+      <button
+        id="userMenuBtn"
+        type="button"
+        class="hidden items-center p-2 w-10 h-10 justify-center text-sm text-zinc-700 rounded-lg hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"
+      >
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+        </svg>
+      </button>
       <button
         id="navbar-button-search-main"
         data-dropdown-toggle="dropdownSearch"
@@ -137,6 +153,8 @@ const { navLinks } = Astro.props;
 </nav>
 
 <script>
+  import { getCurrentUser, signOut } from '../lib/auth';
+
   // LOGIKA TEMA
   const themeButtonEl = document.getElementById("button-theme");
 
@@ -208,4 +226,34 @@ const { navLinks } = Astro.props;
       location.href = `/search?q=${inputEl?.value}`;
     });
   }
+
+  // AUTH LOGIC
+  const signInBtn = document.getElementById('signInBtn');
+  const userMenuBtn = document.getElementById('userMenuBtn');
+
+  async function updateAuthUI() {
+    const { user } = await getCurrentUser();
+
+    if (user) {
+      signInBtn?.classList.add('hidden');
+      userMenuBtn?.classList.remove('hidden');
+      userMenuBtn?.classList.add('inline-flex');
+    } else {
+      signInBtn?.classList.remove('hidden');
+      userMenuBtn?.classList.add('hidden');
+    }
+  }
+
+  signInBtn?.addEventListener('click', () => {
+    (window as any).showAuthModal();
+  });
+
+  userMenuBtn?.addEventListener('click', async () => {
+    if (confirm('Sign out?')) {
+      await signOut();
+      window.location.reload();
+    }
+  });
+
+  updateAuthUI();
 </script>
