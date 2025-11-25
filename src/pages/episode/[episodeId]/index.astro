@@ -53,19 +53,23 @@ const title = ok ? `Nonton Anime ${data.title} - ${siteName}` : `Error - ${siteN
             }}
           />
 
-          <div class="flex flex-wrap justify-center gap-4 my-4">
-            {data.hasPrevEpisode && data.prevEpisode && (
+          <div class="flex justify-between gap-4 my-4">
+            {data.hasPrevEpisode && data.prevEpisode ? (
               <a href={generateUrlPath("/episode", data.prevEpisode.episodeId)} class="navigation-episode-item">
-                {"<- "} {data.prevEpisode.title}
+                Prev Eps
               </a>
+            ) : (
+              <div class="flex-1"></div>
             )}
-            <a href={generateUrlPath("/anime", data.animeId)} class="navigation-episode-item">
+            <a href={generateUrlPath("/anime", data.animeId)} class="navigation-episode-item-center">
                All Eps
             </a>
-            {data.hasNextEpisode && data.nextEpisode && (
+            {data.hasNextEpisode && data.nextEpisode ? (
               <a href={generateUrlPath("/episode", data.nextEpisode.episodeId)} class="navigation-episode-item">
-                {data.nextEpisode.title} {" ->"}
+                Next Eps
               </a>
+            ) : (
+              <div class="flex-1"></div>
             )}
           </div>
 

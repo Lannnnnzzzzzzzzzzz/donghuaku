@@ -36,21 +36,16 @@ const { ok, data, statusCode, message, statusMessage, pagination } = azResult;
       }}
     >
       <Breadcrumb />
-      <Sesepuh>
-        <Content>
-          <WidgetTitle title={`Daftar anime: ${letter}`} />
-          <AnimeList2
-            anime={{
-              list: data.animeList,
-              baseUrlPath: "/anime",
-            }}
-          />
-          <Pagination pagination={pagination} />
-        </Content>
-        <Sidebar>
-          <WidgetTitle title="Sidebar" />
-        </Sidebar>
-      </Sesepuh>
+      <div class="container mx-auto">
+        <WidgetTitle title={`Daftar anime: ${letter}`} />
+        <AnimeList2
+          anime={{
+            list: data.animeList,
+            baseUrlPath: "/anime",
+          }}
+        />
+        <Pagination pagination={pagination} />
+      </div>
     </Layout>
   )
 }
