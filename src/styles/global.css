@@ -62,15 +62,15 @@
   }
 
   .carousel-item-cus {
-    @apply max-w-[250px] md:max-w-[500px] flex flex-col gap-2 md:gap-3;
+    @apply max-w-[180px] md:max-w-[500px] flex flex-col gap-2 md:gap-3;
   }
 
   .carousel-item-eps {
-    @apply text-base md:text-lg font-bold;
+    @apply text-sm md:text-lg font-bold;
   }
 
   .carousel-item-title {
-    @apply text-lg md:text-[2.2rem] font-extrabold line-clamp-2;
+    @apply text-base md:text-[2.2rem] font-extrabold line-clamp-2;
   }
 
   .carousel-item-btn {
