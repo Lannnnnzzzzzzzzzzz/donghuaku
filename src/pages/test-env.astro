@@ -1,0 +1,207 @@
+---
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+---
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Environment Variables Test</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #fff;
+      line-height: 1.6;
+    }
+    .card {
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .success { background: #22c55e; color: #000; }
+    .error { background: #ef4444; }
+    .warning { background: #f59e0b; color: #000; }
+    code {
+      background: #1a1a1a;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+    pre {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    h2 { color: #60a5fa; }
+    h3 { color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Environment Variables Test</h1>
+
+  <div class="card">
+    <h2>Server-Side Check (Build Time)</h2>
+
+    <h3>VITE_SUPABASE_URL</h3>
+    {supabaseUrl ? (
+      <div class="status success">✅ Found</div>
+      <pre>{supabaseUrl}</pre>
+    ) : (
+      <div class="status error">❌ Missing!</div>
+      <p>Add to Vercel: <code>VITE_SUPABASE_URL</code></p>
+    )}
+
+    <h3>VITE_SUPABASE_ANON_KEY</h3>
+    {supabaseKey ? (
+      <div class="status success">✅ Found</div>
+      <pre>{supabaseKey.substring(0, 50)}...</pre>
+    ) : (
+      <div class="status error">❌ Missing!</div>
+      <p>Add to Vercel: <code>VITE_SUPABASE_ANON_KEY</code></p>
+    )}
+  </div>
+
+  <div class="card">
+    <h2>Client-Side Check (Runtime)</h2>
+    <div id="clientResults">Testing...</div>
+  </div>
+
+  <div class="card">
+    <h2>Supabase Connection Test</h2>
+    <div id="supabaseResults">Testing...</div>
+  </div>
+
+  <script>
+    // Client-side check
+    const clientResults = document.getElementById('clientResults');
+    const supabaseResults = document.getElementById('supabaseResults');
+
+    function logClient(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `status ${type}`;
+      div.innerHTML = message;
+      clientResults.appendChild(div);
+    }
+
+    function logSupabase(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `status ${type}`;
+      div.innerHTML = message;
+      supabaseResults.appendChild(div);
+    }
+
+    // Check window object
+    clientResults.innerHTML = '';
+
+    const clientUrl = import.meta.env.VITE_SUPABASE_URL;
+    const clientKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (clientUrl) {
+      logClient(`✅ VITE_SUPABASE_URL available: ${clientUrl}`, 'success');
+    } else {
+      logClient('❌ VITE_SUPABASE_URL not available in client', 'error');
+    }
+
+    if (clientKey) {
+      logClient(`✅ VITE_SUPABASE_ANON_KEY available: ${clientKey.substring(0, 30)}...`, 'success');
+    } else {
+      logClient('❌ VITE_SUPABASE_ANON_KEY not available in client', 'error');
+    }
+  </script>
+
+  <script type="module">
+    const supabaseResults = document.getElementById('supabaseResults');
+
+    function logSupabase(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `status ${type}`;
+      div.innerHTML = message;
+      supabaseResults.appendChild(div);
+    }
+
+    async function testSupabaseConnection() {
+      supabaseResults.innerHTML = '';
+
+      try {
+        const url = import.meta.env.VITE_SUPABASE_URL;
+        const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+        if (!url || !key) {
+          logSupabase('❌ Cannot test: Environment variables missing', 'error');
+          return;
+        }
+
+        logSupabase('Loading Supabase client...', 'warning');
+
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(url, key);
+
+        logSupabase('✅ Supabase client created', 'success');
+
+        // Test database query
+        const { data, error } = await supabase
+          .from('watch_history')
+          .select('count');
+
+        if (error) {
+          logSupabase(`⚠️ Query error: ${error.message}`, 'warning');
+          const pre = document.createElement('pre');
+          pre.textContent = JSON.stringify(error, null, 2);
+          supabaseResults.appendChild(pre);
+        } else {
+          logSupabase('✅ Database connection successful!', 'success');
+        }
+
+        // Test auth
+        const { data: userData, error: authError } = await supabase.auth.getUser();
+
+        if (authError && authError.message !== 'Auth session missing!') {
+          logSupabase(`⚠️ Auth error: ${authError.message}`, 'warning');
+        } else if (userData?.user) {
+          logSupabase(`✅ Logged in as: ${userData.user.email}`, 'success');
+        } else {
+          logSupabase('ℹ️ Not logged in (this is normal)', 'warning');
+        }
+
+      } catch (err) {
+        logSupabase(`❌ Fatal error: ${err.message}`, 'error');
+        const pre = document.createElement('pre');
+        pre.textContent = err.stack || err.toString();
+        supabaseResults.appendChild(pre);
+      }
+    }
+
+    testSupabaseConnection();
+  </script>
+
+  <div class="card">
+    <h2>📋 How to Fix</h2>
+    <ol>
+      <li>Go to Vercel Dashboard → Your Project → Settings → Environment Variables</li>
+      <li>Add these variables for <strong>Production, Preview, and Development</strong>:</li>
+    </ol>
+    <pre>
+VITE_SUPABASE_URL = https://sdqgdnhtiglzwiptbqzl.supabase.co
+
+VITE_SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkcWdkbmh0aWdsendpcHRicXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMzQxODMsImV4cCI6MjA3OTYxMDE4M30.zwAtMd1_3j8VszTj1xOwZoIXZOKrpdP2eZHeCEFJQYE
+    </pre>
+    <ol start="3">
+      <li>Redeploy: Deployments → Latest → "Redeploy"</li>
+      <li>Wait for build to complete</li>
+      <li>Refresh this page</li>
+    </ol>
+  </div>
+</body>
+</html>
