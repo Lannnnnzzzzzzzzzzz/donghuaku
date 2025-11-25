@@ -58,11 +58,11 @@
   }
 
   .carousel-item-layer {
-    @apply bg-gradient-to-r from-zinc-200 dark:from-zinc-950 to-transparent text-zinc-800 dark:text-white absolute w-full h-full flex items-center p-4;
+    @apply bg-gradient-to-r from-zinc-200 dark:from-zinc-950 to-transparent text-zinc-800 dark:text-white absolute w-full h-full flex items-end md:items-center p-4 pb-16 md:pb-4;
   }
 
   .carousel-item-cus {
-    @apply max-w-[250px] md:max-w-[500px] flex flex-col gap-3;
+    @apply max-w-[250px] md:max-w-[500px] flex flex-col gap-2 md:gap-3;
   }
 
   .carousel-item-eps {
@@ -70,7 +70,7 @@
   }
 
   .carousel-item-title {
-    @apply text-[1.3rem] md:text-[2.2rem] font-extrabold line-clamp-2;
+    @apply text-lg md:text-[2.2rem] font-extrabold line-clamp-2;
   }
 
   .carousel-item-btn {
