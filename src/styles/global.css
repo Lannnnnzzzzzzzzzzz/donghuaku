@@ -54,7 +54,7 @@
   }
 
   .carousel-item-image {
-    @apply absolute block rounded-lg md:right-0 w-full lg:w-1/2 h-full object-contain object-center;
+    @apply h-full w-auto max-w-[60%] md:max-w-[50%] object-contain rounded-lg;
   }
 
   .carousel-item-layer {
