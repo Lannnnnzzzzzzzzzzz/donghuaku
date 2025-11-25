@@ -4,9 +4,12 @@ interface Props {
     defaultStreamingUrl: string;
     server: { qualities: Quality[] };
   };
+  episodeId?: string;
+  animeId?: string;
+  nextEpisodeUrl?: string;
 }
 
-const { anime } = Astro.props;
+const { anime, episodeId, animeId, nextEpisodeUrl } = Astro.props;
 ---
 
 <select
@@ -60,16 +63,111 @@ const { anime } = Astro.props;
   }
 </div>
 
-<script>
-  const selectEl = document.getElementById("servers") as HTMLSelectElement;
-  const defaultServerEl = document.getElementById(
-    "default-server"
-  ) as HTMLOptionElement;
-  const videoPlayerWrapper = document.getElementById(
-    "video-player-wrapper"
-  ) as HTMLDivElement;
+<script define:vars={{ episodeId, animeId, nextEpisodeUrl }}>
+  import { savePlaybackProgress, getPlaybackProgress } from '../services/playbackService';
+  import { addToWatchHistory } from '../services/watchHistoryService';
+  import { getSkipTimes } from '../services/skipTimesService';
 
-  function cuss(src: string) {
+  const selectEl = document.getElementById("servers");
+  const defaultServerEl = document.getElementById("default-server");
+  const videoPlayerWrapper = document.getElementById("video-player-wrapper");
+
+  let currentVideo = null;
+  let skipTimes = null;
+  let autoNextEnabled = true;
+  let progressSaveInterval = null;
+
+  if (animeId) {
+    getSkipTimes(animeId).then(times => {
+      skipTimes = times;
+    });
+  }
+
+  function setupVideoListeners(videoEl) {
+    if (!videoEl || !episodeId) return;
+
+    currentVideo = videoEl;
+
+    getPlaybackProgress(episodeId).then(progress => {
+      if (progress && progress.position > 10) {
+        const shouldResume = confirm(`Lanjutkan dari ${formatTime(progress.position)}?`);
+        if (shouldResume) {
+          videoEl.currentTime = progress.position;
+        }
+      }
+    });
+
+    videoEl.addEventListener('timeupdate', () => {
+      if (skipTimes) {
+        const currentTime = videoEl.currentTime;
+
+        if (skipTimes.intro_start > 0 && currentTime >= skipTimes.intro_start && currentTime < skipTimes.intro_end) {
+          showSkipButton('intro', skipTimes.intro_end);
+        } else if (skipTimes.outro_start > 0 && currentTime >= skipTimes.outro_start && currentTime < skipTimes.outro_end) {
+          showSkipButton('outro', skipTimes.outro_end);
+        } else {
+          hideSkipButton();
+        }
+      }
+    });
+
+    videoEl.addEventListener('ended', () => {
+      if (autoNextEnabled && nextEpisodeUrl) {
+        setTimeout(() => {
+          window.location.href = nextEpisodeUrl;
+        }, 3000);
+      }
+    });
+
+    progressSaveInterval = setInterval(() => {
+      if (!videoEl.paused && episodeId) {
+        savePlaybackProgress(episodeId, Math.floor(videoEl.currentTime), Math.floor(videoEl.duration));
+      }
+    }, 10000);
+
+    videoEl.addEventListener('pause', () => {
+      if (episodeId) {
+        savePlaybackProgress(episodeId, Math.floor(videoEl.currentTime), Math.floor(videoEl.duration));
+      }
+    });
+  }
+
+  function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function showSkipButton(type, skipTo) {
+    let btn = document.getElementById('skip-button');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = 'skip-button';
+      btn.className = 'fixed bottom-24 right-8 bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg z-50 transition-all';
+      document.body.appendChild(btn);
+    }
+    btn.textContent = type === 'intro' ? 'Skip Intro' : 'Skip Outro';
+    btn.style.display = 'block';
+    btn.onclick = () => {
+      if (currentVideo) {
+        currentVideo.currentTime = skipTo;
+      }
+      hideSkipButton();
+    };
+  }
+
+  function hideSkipButton() {
+    const btn = document.getElementById('skip-button');
+    if (btn) {
+      btn.style.display = 'none';
+    }
+  }
+
+  function cuss(src) {
+    if (progressSaveInterval) {
+      clearInterval(progressSaveInterval);
+    }
+
     if (src.endsWith(".mp4")) {
       videoPlayerWrapper.innerHTML = `
         <video
@@ -79,6 +177,8 @@ const { anime } = Astro.props;
           src=${src}
         />
       `;
+      const videoEl = document.getElementById('video-player-video');
+      setupVideoListeners(videoEl);
     } else {
       videoPlayerWrapper.innerHTML = `
         <iframe
@@ -89,6 +189,11 @@ const { anime } = Astro.props;
         />
       `;
     }
+  }
+
+  const initialVideo = document.getElementById('video-player-video');
+  if (initialVideo) {
+    setupVideoListeners(initialVideo);
   }
 
   selectEl.addEventListener("change", async function () {

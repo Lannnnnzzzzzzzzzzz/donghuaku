@@ -51,6 +51,9 @@ const title = ok ? `Nonton Anime ${data.title} - ${siteName}` : `Error - ${siteN
               defaultStreamingUrl: data.defaultStreamingUrl,
               server: data.server,
             }}
+            episodeId={episodeId}
+            animeId={data.animeId}
+            nextEpisodeUrl={data.hasNextEpisode && data.nextEpisode ? generateUrlPath("/episode", data.nextEpisode.episodeId) : undefined}
           />
 
           <div class="flex justify-between gap-4 my-4">
