@@ -34,12 +34,12 @@ const {
           </div>
           <div class="carousel-item-layer">
             <div class="carousel-item-cus">
+              <h1 class="carousel-item-title">
+                {anime.title.split('Episode')[0].trim()}
+              </h1>
               <p class="carousel-item-eps">
                 <span class="text-teal-600">Episode {anime.episodes}</span>
               </p>
-              <h1 class="carousel-item-title">
-                {anime.title.replace(`Episode ${anime.episodes}`, "").trim()}
-              </h1>
               <a
                 href={generateUrlPath(baseUrlPath, anime.animeId || "")}
                 class="carousel-item-btn"
