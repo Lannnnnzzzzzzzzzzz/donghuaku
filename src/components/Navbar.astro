@@ -37,7 +37,7 @@ const { navLinks } = Astro.props;
       <button
         id="signInBtn"
         type="button"
-        class="relative z-10 inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 cursor-pointer"
+        class="relative z-10 inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 cursor-pointer pointer-events-auto"
       >
         Sign In
       </button>
@@ -228,32 +228,53 @@ const { navLinks } = Astro.props;
   }
 
   // AUTH LOGIC
-  const signInBtn = document.getElementById('signInBtn');
-  const userMenuBtn = document.getElementById('userMenuBtn');
+  document.addEventListener('DOMContentLoaded', () => {
+    const signInBtn = document.getElementById('signInBtn');
+    const userMenuBtn = document.getElementById('userMenuBtn');
 
-  async function updateAuthUI() {
-    const { user } = await getCurrentUser();
+    async function updateAuthUI() {
+      try {
+        const { user } = await getCurrentUser();
 
-    if (user) {
-      signInBtn?.classList.add('hidden');
-      userMenuBtn?.classList.remove('hidden');
-      userMenuBtn?.classList.add('inline-flex');
-    } else {
-      signInBtn?.classList.remove('hidden');
-      userMenuBtn?.classList.add('hidden');
+        if (user) {
+          signInBtn?.classList.add('hidden');
+          userMenuBtn?.classList.remove('hidden');
+          userMenuBtn?.classList.add('inline-flex');
+        } else {
+          signInBtn?.classList.remove('hidden');
+          userMenuBtn?.classList.add('hidden');
+        }
+      } catch (error) {
+        console.error('Error updating auth UI:', error);
+        signInBtn?.classList.remove('hidden');
+        userMenuBtn?.classList.add('hidden');
+      }
     }
-  }
 
-  signInBtn?.addEventListener('click', () => {
-    (window as any).showAuthModal();
+    signInBtn?.addEventListener('click', () => {
+      const showAuthModal = (window as any).showAuthModal;
+      if (showAuthModal && typeof showAuthModal === 'function') {
+        showAuthModal();
+      } else {
+        const modal = document.getElementById('authModal');
+        if (modal) {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        }
+      }
+    });
+
+    userMenuBtn?.addEventListener('click', async () => {
+      if (confirm('Sign out?')) {
+        try {
+          await signOut();
+          window.location.reload();
+        } catch (error) {
+          console.error('Sign out error:', error);
+        }
+      }
+    });
+
+    updateAuthUI();
   });
-
-  userMenuBtn?.addEventListener('click', async () => {
-    if (confirm('Sign out?')) {
-      await signOut();
-      window.location.reload();
-    }
-  });
-
-  updateAuthUI();
 </script>

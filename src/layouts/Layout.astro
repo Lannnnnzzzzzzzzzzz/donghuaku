@@ -4,6 +4,7 @@ import { SEO, type SEOProps } from "astro-seo";
 import animeConfig from "@configs/animeConfig";
 import Footer from "@components/Footer.astro";
 import Navbar from "@components/Navbar.astro";
+import AuthModal from "@components/AuthModal.astro";
 
 interface Props {
   seo?: SEOProps;
@@ -72,7 +73,7 @@ const seo: SEOProps = {
           { title: "Daftar Genre", href: "/genres" },
           { title: "Jadwal Rilis", href: "/schedule" },
           { title: "A-Z List", href: "/az-list/A" },
-          { title: "Seasons", href: "/genres" },    
+          { title: "Seasons", href: "/genres" },
         ],
         _2: [
           { title: "Disclaimers", href: "/disclaimers" },
@@ -89,6 +90,8 @@ const seo: SEOProps = {
         ],
       }}
     />
+
+    <AuthModal />
   </body>
 </html>
 

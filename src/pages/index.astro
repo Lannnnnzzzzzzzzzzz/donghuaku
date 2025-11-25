@@ -11,6 +11,7 @@ import Breadcrumb from "@components/Breadcrumb.astro";
 import Content from "@components/Content.astro";
 import Sidebar from "@components/Sidebar.astro";
 import AnimeList1 from "@components/AnimeList1.astro";
+import ContinueWatching from "@components/ContinueWatching.astro";
 import Error from "@components/Error.astro";
 import generateUrlPath from "@utils/generateUrlPath";
 
@@ -55,6 +56,8 @@ const genreListOnly = allGenres.filter(g => !/^\d{4}|spring|summer|fall|winter/i
   
       <Sesepuh>
         <Content>
+          <ContinueWatching />
+
           <WidgetTitle title="Episode Terbaru" href="/recent" />
           <AnimeList1 
             anime={{ 
