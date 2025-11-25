@@ -1,0 +1,73 @@
+---
+import WidgetTitle from './WidgetTitle.astro';
+---
+
+<div id="continueWatchingSection" class="hidden mb-8">
+  <WidgetTitle title="Continue Watching" />
+  <div id="continueWatchingList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+  </div>
+</div>
+
+<script>
+  import { getContinueWatching } from '../lib/playbackProgress';
+  import { getWatchHistory } from '../lib/watchHistory';
+  import { getCurrentUser } from '../lib/auth';
+
+  async function loadContinueWatching() {
+    const { user } = await getCurrentUser();
+    if (!user) return;
+
+    const { data: history } = await getWatchHistory(10);
+
+    if (!history || history.length === 0) return;
+
+    const section = document.getElementById('continueWatchingSection');
+    const list = document.getElementById('continueWatchingList');
+
+    if (!section || !list) return;
+
+    const uniqueAnimes = new Map();
+    history.forEach(item => {
+      if (!uniqueAnimes.has(item.anime_id) && !item.completed) {
+        uniqueAnimes.set(item.anime_id, item);
+      }
+    });
+
+    if (uniqueAnimes.size === 0) return;
+
+    section.classList.remove('hidden');
+
+    list.innerHTML = '';
+    uniqueAnimes.forEach(item => {
+      const card = document.createElement('a');
+      card.href = `/episode/${item.episode_id}`;
+      card.className = 'group relative block overflow-hidden rounded-lg bg-zinc-800 hover:ring-2 hover:ring-orange-500 transition-all';
+
+      const progressPercent = item.duration > 0 ? (item.last_position / item.duration) * 100 : 0;
+
+      card.innerHTML = `
+        <div class="aspect-[3/4] overflow-hidden">
+          <img
+            src="${item.thumbnail || '/placeholder.jpg'}"
+            alt="${item.anime_title}"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            loading="lazy"
+          />
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">
+          <h3 class="text-white text-sm font-semibold line-clamp-1">${item.anime_title}</h3>
+          <p class="text-zinc-300 text-xs">${item.episode_number}</p>
+          ${progressPercent > 0 ? `
+            <div class="mt-2 h-1 bg-zinc-700 rounded-full overflow-hidden">
+              <div class="h-full bg-orange-500" style="width: ${progressPercent}%"></div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      list.appendChild(card);
+    });
+  }
+
+  loadContinueWatching();
+</script>

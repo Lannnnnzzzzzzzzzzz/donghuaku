@@ -37,7 +37,7 @@ const { navLinks } = Astro.props;
       <button
         id="signInBtn"
         type="button"
-        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+        class="relative z-10 inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 cursor-pointer"
       >
         Sign In
       </button>
@@ -59,9 +59,9 @@ const { navLinks } = Astro.props;
       >
         <SearchIcon />
       </button>
-      <div id="dropdownSearch" class="z-10 hidden w-full">
+      <div id="dropdownSearch" class="z-50 hidden w-full absolute top-full left-0 right-0">
         <ul
-          class="p-4 bg-white dark:bg-zinc-900 text-sm border-b border-zinc-200 dark:border-zinc-600 -translate-y-2"
+          class="p-4 bg-white dark:bg-zinc-900 text-sm border-b border-zinc-200 dark:border-zinc-600"
         >
           <form
             id="navbar-form-search"
