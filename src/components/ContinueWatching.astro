@@ -14,12 +14,24 @@ import WidgetTitle from './WidgetTitle.astro';
   import { getCurrentUser } from '../lib/auth';
 
   async function loadContinueWatching() {
-    const { user } = await getCurrentUser();
-    if (!user) return;
+    try {
+      const { user } = await getCurrentUser();
+      if (!user) {
+        console.log('Continue Watching: User not logged in');
+        return;
+      }
 
-    const { data: history } = await getWatchHistory(10);
+      const { data: history, error } = await getWatchHistory(10);
 
-    if (!history || history.length === 0) return;
+      if (error) {
+        console.error('Continue Watching error:', error);
+        return;
+      }
+
+      if (!history || history.length === 0) {
+        console.log('Continue Watching: No history found');
+        return;
+      }
 
     const section = document.getElementById('continueWatchingSection');
     const list = document.getElementById('continueWatchingList');
@@ -67,7 +79,14 @@ import WidgetTitle from './WidgetTitle.astro';
 
       list.appendChild(card);
     });
+    } catch (error) {
+      console.error('Continue Watching fatal error:', error);
+    }
   }
 
-  loadContinueWatching();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadContinueWatching);
+  } else {
+    loadContinueWatching();
+  }
 </script>

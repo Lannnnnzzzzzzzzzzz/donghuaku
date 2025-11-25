@@ -22,8 +22,16 @@ export async function signOut() {
 }
 
 export async function getCurrentUser() {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  return { user, error };
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error('getCurrentUser error:', error);
+    }
+    return { user, error };
+  } catch (err) {
+    console.error('getCurrentUser fatal error:', err);
+    return { user: null, error: err };
+  }
 }
 
 export function onAuthStateChange(callback: (event: string, session: any) => void) {
